@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/crumbs.a.microbakery/static/css/main.08f1cd01.css",
-    "main.js": "/crumbs.a.microbakery/static/js/main.99287d57.js",
+    "main.js": "/crumbs.a.microbakery/static/js/main.8f1befaa.js",
     "index.html": "/crumbs.a.microbakery/index.html",
     "main.08f1cd01.css.map": "/crumbs.a.microbakery/static/css/main.08f1cd01.css.map",
-    "main.99287d57.js.map": "/crumbs.a.microbakery/static/js/main.99287d57.js.map"
+    "main.8f1befaa.js.map": "/crumbs.a.microbakery/static/js/main.8f1befaa.js.map"
   },
   "entrypoints": [
     "static/css/main.08f1cd01.css",
-    "static/js/main.99287d57.js"
+    "static/js/main.8f1befaa.js"
   ]
 }
