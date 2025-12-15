@@ -1,7 +1,7 @@
 
 export const SHOP_LOCATION = {
-  lat: 12.9961, 
-  lng: 77.7127,
+  lat: 13.0292,
+  lng: 77.75149,
   pincode: "560067",
   name: "Crumbs A Microbakery"
 };

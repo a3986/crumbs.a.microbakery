@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ShoppingBag, MapPin, Minus, Plus, Trash2, Menu, X, ChevronRight, 
-  Instagram, Facebook, Twitter, Send, Navigation, Percent, ArrowLeft, 
+import {
+  ShoppingBag, MapPin, Minus, Plus, Trash2, Menu, X, ChevronRight,
+  Instagram, Facebook, Twitter, Send, Navigation, Percent, ArrowLeft,
   Heart, MessageCircle, ExternalLink, Grid, FileText
 } from 'lucide-react';
 
@@ -11,7 +11,7 @@ import { PRODUCTS, PORTFOLIO_POSTS } from './bakery_data';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
-  const R = 6371; 
+  const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -54,7 +54,7 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
             </button>
           </div>
           <div className="md:hidden flex items-center space-x-4">
-             <button onClick={() => onViewChange('cart')} className="relative p-2 text-gray-600">
+            <button onClick={() => onViewChange('cart')} className="relative p-2 text-gray-600">
               <ShoppingBag size={24} />
               {cartCount > 0 && <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{cartCount}</span>}
             </button>
@@ -71,7 +71,7 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
             <button onClick={() => { onViewChange('products'); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-3 font-medium text-gray-700 hover:bg-amber-50">Menu</button>
             <button onClick={() => { onViewChange('portfolio'); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-3 font-medium text-gray-700 hover:bg-amber-50">Portfolio</button>
             <button onClick={() => { onViewChange('about'); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-3 font-medium text-gray-700 hover:bg-amber-50">About Us</button>
-            <button onClick={() => { setIsLocationModalOpen(true); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-3 font-medium text-gray-700 hover:bg-amber-50 flex items-center"><MapPin size={16} className="mr-2"/> {locationData.address || "Set Location"}</button>
+            <button onClick={() => { setIsLocationModalOpen(true); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-3 font-medium text-gray-700 hover:bg-amber-50 flex items-center"><MapPin size={16} className="mr-2" /> {locationData.address || "Set Location"}</button>
           </div>
         </div>
       )}
@@ -114,7 +114,7 @@ const LocationModal = ({ isOpen, onClose, onSetLocation }) => {
   const handleManualSubmit = (e) => {
     e.preventDefault();
     if (manualZip.length < 6) { setError("Please enter a valid 6-digit Pincode"); return; }
-    const mockLat = SHOP_LOCATION.lat + (Math.random() * 0.05 - 0.025); 
+    const mockLat = SHOP_LOCATION.lat + (Math.random() * 0.05 - 0.025);
     const mockLng = SHOP_LOCATION.lng + (Math.random() * 0.05 - 0.025);
     onSetLocation({ type: 'manual', lat: mockLat, lng: mockLng, address: `Pincode: ${manualZip}`, pincode: manualZip });
     onClose();
@@ -147,11 +147,12 @@ const LocationModal = ({ isOpen, onClose, onSetLocation }) => {
 
 const ProductCard = ({ product, addToCart }) => {
   const displayPrice = product.isDeal ? product.discountPrice : product.price;
+  const imgSrc = (product.image && product.image.startsWith('/')) ? `${process.env.PUBLIC_URL}${product.image}` : product.image;
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border border-gray-100 flex flex-col h-full">
       <div className="relative h-64 overflow-hidden">
         {product.isDeal && <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md animate-pulse">DEAL</div>}
-        <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"/>
+        <img src={imgSrc} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
         <div className="absolute top-4 right-4 bg-white/95 backdrop-blur text-gray-900 font-bold px-3 py-1 rounded-full text-sm shadow-sm">
           {product.isDeal ? <div className="flex items-center gap-2"><span className="text-gray-400 line-through text-xs">₹{product.price}</span><span className="text-red-600">₹{displayPrice}</span></div> : <span>₹{product.price}</span>}
         </div>
@@ -197,17 +198,28 @@ const Portfolio = () => {
     <div className="py-12 bg-white animate-in fade-in duration-500">
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 mb-12 border-b border-gray-100 pb-12">
-           <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500">
-             <div className="w-full h-full bg-white rounded-full p-1"><img src="https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&q=80&w=300" alt="Crumbs A Microbakery" className="w-full h-full object-cover rounded-full" /></div>
-           </div>
-           <div className="flex-1 text-center sm:text-left">
-             <div className="flex flex-col sm:flex-row items-center gap-4 mb-4"><h2 className="text-2xl font-bold text-gray-900">crumbs.a.microbakery</h2><div className="flex gap-2"><a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center gap-2"><Instagram size={18} /> Follow</a><button className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold text-sm transition-colors">Message</button></div></div>
-             <div className="flex justify-center sm:justify-start gap-8 mb-4 text-gray-700 text-sm sm:text-base"><div><span className="font-bold text-gray-900">142</span> posts</div><div><span className="font-bold text-gray-900">2.4k</span> followers</div><div><span className="font-bold text-gray-900">350</span> following</div></div>
-             <div className="text-sm sm:text-base text-gray-800"><p className="font-bold">Crumbs A Microbakery 🥖</p><p>Artisan Sourdough & Pastries | Bangalore</p><p>DM to order or check website 👇</p></div>
-           </div>
+          <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500">
+            <div className="w-full h-full bg-white rounded-full p-1"><img src={`${process.env.PUBLIC_URL}/products/insta_profile.jpg`} alt="Crumbs A Microbakery" className="w-full h-full object-cover rounded-full" /></div>
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-4"><h2 className="text-2xl font-bold text-gray-900">crumbs.a.microbakery</h2><div className="flex gap-2"><a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center gap-2"><Instagram size={18} /> Follow</a><button className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold text-sm transition-colors">Message</button></div></div>
+            <div className="flex justify-center sm:justify-start gap-8 mb-4 text-gray-700 text-sm sm:text-base"><div><span className="font-bold text-gray-900">142</span> posts</div><div><span className="font-bold text-gray-900">2.4k</span> followers</div><div><span className="font-bold text-gray-900">350</span> following</div></div>
+            <div className="text-sm sm:text-base text-gray-800"><p className="font-bold">Crumbs A Microbakery 🥖</p><p>Artisan Sourdough & Pastries | Bangalore</p><p>DM to order or check website 👇</p></div>
+          </div>
         </div>
         <div className="flex items-center gap-2 mb-6 text-xs font-bold text-gray-500 uppercase tracking-widest border-t border-black pt-4 inline-block"><Grid size={14} /> Posts</div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-1 md:gap-4">{PORTFOLIO_POSTS.map(post => <div key={post.id} className="group relative aspect-square bg-gray-100 overflow-hidden cursor-pointer"><img src={post.image} alt="Instagram Post" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" /><div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6 text-white font-bold"><div className="flex items-center gap-2"><Heart size={20} fill="white" /> {post.likes}</div><div className="flex items-center gap-2"><MessageCircle size={20} fill="white" /> {post.comments}</div></div></div>)}</div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-1 md:gap-4">{PORTFOLIO_POSTS.map(post => {
+          const imgSrc = (post.image && post.image.startsWith('/')) ? `${process.env.PUBLIC_URL}${post.image}` : post.image;
+          return (
+            <div key={post.id} className="group relative aspect-square bg-gray-100 overflow-hidden cursor-pointer">
+              <img src={imgSrc} alt="Instagram Post" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6 text-white font-bold">
+                <div className="flex items-center gap-2"><Heart size={20} fill="white" /> {post.likes}</div>
+                <div className="flex items-center gap-2"><MessageCircle size={20} fill="white" /> {post.comments}</div>
+              </div>
+            </div>
+          );
+        })}</div>
         <div className="mt-12 text-center"><a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-800 font-semibold">View full feed on Instagram <ExternalLink size={16} /></a></div>
       </div>
     </div>
@@ -219,11 +231,11 @@ const AboutUs = () => {
     <div className="py-20 bg-amber-50 animate-in fade-in duration-500">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center gap-12 mb-20">
-          <div className="w-full md:w-1/2"><div className="relative"><div className="absolute top-4 left-4 w-full h-full border-4 border-amber-200 rounded-xl z-0 transform translate-x-2 translate-y-2"></div><img src="https://images.unsplash.com/photo-1583332130317-de7cb8c0d953?auto=format&fit=crop&q=80&w=800" alt="Siddhi Rane - Baker" className="relative z-10 w-full rounded-xl shadow-xl"/></div></div>
+          <div className="w-full md:w-1/2"><div className="relative"><div className="absolute top-4 left-4 w-full h-full border-4 border-amber-200 rounded-xl z-0 transform translate-x-2 translate-y-2"></div><img src={`${process.env.PUBLIC_URL}/products/insta_profile.jpg?auto=format&fit=crop&q=80&w=800`} alt="Siddhi Rane - Baker" className="relative z-10 w-full rounded-xl shadow-xl" /></div></div>
           <div className="w-full md:w-1/2"><h1 className="text-4xl md:text-5xl font-bold font-serif text-gray-900 mb-6">Meet Siddhi Rane</h1><h3 className="text-xl text-amber-600 font-medium mb-6">Founder & Head Baker</h3><p className="text-gray-600 leading-relaxed mb-6">Welcome to Crumbs A Microbakery! My journey began in a small home kitchen with nothing but flour, water, and a dream. Baking isn't just a profession for me; it's a love language.</p><p className="text-gray-600 leading-relaxed mb-6">I believe that the secret to a perfect loaf lies in patience and purity. That's why every product that leaves my kitchen is handcrafted with the absolute best quality ingredients—no preservatives, no shortcuts, just pure, wholesome goodness.</p><div className="flex gap-4"><div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm w-32"><span className="text-3xl font-bold text-amber-600 mb-1">5+</span><span className="text-xs text-gray-500 uppercase tracking-wide">Years Baking</span></div><div className="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm w-32"><span className="text-3xl font-bold text-amber-600 mb-1">100%</span><span className="text-xs text-gray-500 uppercase tracking-wide">Handmade</span></div></div></div>
         </div>
         <div className="text-center mb-12"><h2 className="text-3xl font-bold text-gray-900 font-serif mb-4">Baked with Passion</h2><p className="text-gray-600 max-w-2xl mx-auto">A glimpse into the daily magic that happens in our kitchen.</p></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6"><img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=600" alt="Kneading Dough" className="w-full h-64 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow"/><img src="https://images.unsplash.com/photo-1621253457002-30cb1943899f?auto=format&fit=crop&q=80&w=600" alt="Fresh Ingredients" className="w-full h-64 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow"/><img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&q=80&w=600" alt="Finished Product" className="w-full h-64 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow"/></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6"><img src={`${process.env.PUBLIC_URL}/products/insta_profile.jpg?auto=format&fit=crop&q=80&w=600`} alt="Kneading Dough" className="w-full h-64 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow" /><img src={`${process.env.PUBLIC_URL}/products/insta_profile.jpg?auto=format&fit=crop&q=80&w=600`} alt="Fresh Ingredients" className="w-full h-64 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow" /><img src={`${process.env.PUBLIC_URL}/products/insta_profile.jpg?auto=format&fit=crop&q=80&w=600`} alt="Finished Product" className="w-full h-64 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow" /></div>
       </div>
     </div>
   );
@@ -367,8 +379,8 @@ const App = () => {
         {currentView === 'home' && (
           <>
             <div className="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-               <div className="absolute inset-0 z-0" style={{backgroundImage: 'url("https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=2000")', backgroundAttachment: 'fixed', backgroundPosition: 'center', backgroundSize: 'cover'}}><div className="absolute inset-0 bg-black/40" /></div>
-               <div className="relative z-10 text-center px-4 max-w-4xl mx-auto"><h1 className="text-5xl md:text-7xl font-bold text-white font-serif mb-6 drop-shadow-lg">Artisan Baking <br /> With Soul</h1><button onClick={() => setCurrentView('products')} className="bg-amber-600 hover:bg-amber-700 text-white text-lg font-semibold px-8 py-4 rounded-full transition-all hover:scale-105 flex items-center mx-auto gap-2">Order Now <ChevronRight size={20} /></button></div>
+              <div className="absolute inset-0 z-0" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=2000")', backgroundAttachment: 'fixed', backgroundPosition: 'center', backgroundSize: 'cover' }}><div className="absolute inset-0 bg-black/40" /></div>
+              <div className="relative z-10 text-center px-4 max-w-4xl mx-auto"><h1 className="text-5xl md:text-7xl font-bold text-white font-serif mb-6 drop-shadow-lg">Artisan Baking <br /> With Soul</h1><button onClick={() => setCurrentView('products')} className="bg-amber-600 hover:bg-amber-700 text-white text-lg font-semibold px-8 py-4 rounded-full transition-all hover:scale-105 flex items-center mx-auto gap-2">Order Now <ChevronRight size={20} /></button></div>
             </div>
             <DealsSection addToCart={addToCart} />
             <Products addToCart={addToCart} />
