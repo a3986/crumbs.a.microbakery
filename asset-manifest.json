@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/crumbs.a.microbakery/static/js/main.742db7f8.js",
+    "main.js": "/crumbs.a.microbakery/static/js/main.3a8c1ab7.js",
     "index.html": "/crumbs.a.microbakery/index.html",
-    "main.742db7f8.js.map": "/crumbs.a.microbakery/static/js/main.742db7f8.js.map"
+    "main.3a8c1ab7.js.map": "/crumbs.a.microbakery/static/js/main.3a8c1ab7.js.map"
   },
   "entrypoints": [
-    "static/js/main.742db7f8.js"
+    "static/js/main.3a8c1ab7.js"
   ]
 }
