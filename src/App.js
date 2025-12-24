@@ -1168,7 +1168,7 @@ const App = () => {
                  <video autoPlay loop muted playsInline className="w-full h-full object-cover"><source src="/crumbs.a.microbakery/products/cover.mov" type="video/mp4" />Your browser does not support the video tag.</video>
                </div>
                <div className="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center">
-                 <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold text-sm mb-6 animate-in slide-in-from-bottom-4">EST. 2023 • BANGALORE</div>
+                 <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold text-sm mb-6 animate-in slide-in-from-bottom-4">EST. 2025 • BANGALORE</div>
                  <h1 className="text-6xl md:text-8xl font-black text-white font-serif mb-8 leading-[0.9] drop-shadow-xl animate-in slide-in-from-bottom-8">Artisan Baking <br /> <span className="text-orange-500">With Soul.</span></h1>
                  <p className="text-xl md:text-2xl text-white/90 font-medium mb-10 max-w-2xl leading-relaxed drop-shadow-md">Handcrafted sourdough, delicate pastries, and moments of joy delivered straight to your door.</p>
                  <button onClick={() => setCurrentView('products')} className="bg-orange-600 hover:bg-orange-500 text-white text-lg font-bold px-10 py-5 rounded-full transition-all hover:scale-105 hover:shadow-orange-500/50 shadow-2xl flex items-center gap-3 animate-in zoom-in delay-200">Order Now <ChevronRight size={24} /></button>
@@ -1205,7 +1205,7 @@ const App = () => {
         <div className="mb-8">
           <span className="text-3xl font-extrabold tracking-tight text-white">Crumbs<span className="text-orange-500">.</span></span>
         </div>
-        <p className="font-medium">© 2024 Crumbs A Microbakery (560067). All rights reserved.</p>
+        <p className="font-medium">© 2025 Crumbs A Microbakery (560067). All rights reserved.</p>
       </footer>
       <LocationModal isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onSetLocation={setLocationData} />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} isDarkMode={isDarkMode} />
