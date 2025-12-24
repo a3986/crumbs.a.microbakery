@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useRef } from 'react';
+import TawkMessengerReact from '@tawk.to/tawk-messenger-react';
 import { 
   ShoppingBag, 
   MapPin, 
@@ -1078,6 +1080,7 @@ const Cart = ({ cart, updateQuantity, removeFromCart, locationData, onCheckout, 
 
 const App = () => {
   const [currentView, setCurrentView] = useState('home');
+  const tawkMessengerRef = useRef();
   // Default to Dark Mode (true) as requested
   const [isDarkMode, setIsDarkMode] = useState(true); 
   
@@ -1119,6 +1122,17 @@ const App = () => {
   }, []);
 
   const clearCart = () => setCart([]);
+
+  const onLoad = () => {
+    // This sends the data to tawk.to as soon as the widget loads
+    tawkMessengerRef.current.setAttributes({
+      name: user?.name,
+      email: user?.email,
+      hash: 'USER_HASH_FOR_SECURE_AUTH' // Optional: for Secure Mode
+    }, (error) => {
+        if (error) console.error("Tawk error:", error);
+    });
+  };
 
   const handleLogout = async () => {
     try {
@@ -1207,6 +1221,14 @@ const App = () => {
         </div>
         <p className="font-medium">© 2025 Crumbs A Microbakery (560067). All rights reserved.</p>
       </footer>
+      <div className="App">
+      <TawkMessengerReact
+        propertyId="694c3fee0e700d197f635a93"
+        widgetId="1jd8tjfoa"
+        ref={tawkMessengerRef}
+        onLoad={onLoad} 
+      />
+      </div>
       <LocationModal isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onSetLocation={setLocationData} />
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} isDarkMode={isDarkMode} />
     </div>
