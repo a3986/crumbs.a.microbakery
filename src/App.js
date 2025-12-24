@@ -27,15 +27,53 @@ import {
   Calendar,
   Filter,
   Sun,
-  Moon
+  Moon,
+  LogOut,
+  LogIn,
+  Download,
+  PackageCheck
 } from 'lucide-react';
+
+// --- FIREBASE IMPORTS ---
+// In a real project, install firebase via npm: npm install firebase
+import { initializeApp } from "firebase/app";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  signOut, 
+  onAuthStateChanged,
+  getIdTokenResult
+} from "firebase/auth";
+
+
 import { SHOP_LOCATION, INSTAGRAM_URL, GOOGLE_FORM_URL } from './bakery_config';
 import { PRODUCTS, PORTFOLIO_POSTS } from './bakery_data';
+
+import {DELIVERY_ZONES} from './delivery_zones';
+// --- FIREBASE CONFIGURATION ---
+// REPLACE with your actual Firebase project config
+const firebaseConfig = {
+  apiKey: "AIzaSyCrPVww-6iJHxxgHpGAHxxp9Oi-IRHwKCc",
+  authDomain: "crumbs-a-microbakery.firebaseapp.com",
+  projectId: "crumbs-a-microbakery",
+  storageBucket: "crumbs-a-microbakery.firebasestorage.app",
+  messagingSenderId: "163169248512",
+  appId: "1:163169248512:web:65ad2610b417fb10b13fe5",
+  measurementId: "G-D7W5GDS41K"
+};
+
+
+
+// Initialize Firebase (Conditional check to prevent re-initialization errors in hot-reload envs)
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
 
 // --- DEPLOYMENT CONFIGURATION ---
 // Set this to "cloud" when deploying to GitHub Pages with separate config files.
 // Set this to "preview" to run in this standalone Canvas environment.
-const deployment_type = "preview"; 
+const deployment_type = "production"; 
 
 // --- API CONFIGURATION ---
 //const BACKEND_API_URL = "http://localhost:3001/api"; // Base API URL
@@ -53,22 +91,22 @@ import { PRODUCTS, PORTFOLIO_POSTS } from './bakery_data';
 // [PREVIEW SETUP]
 // These definitions are used when deployment_type is "preview".
 // If switching to "cloud", you can either comment these out or let the imports override them if your bundler supports it.
-
+const PREVIEW_STYLES = '';
 // -- Inline Styles for Preview (Simulating bakery_styles.css) --
-const PREVIEW_STYLES = deployment_type === "preview" ? `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&family=Inter:wght@300;400;600;800&display=swap');
-  :root { --font-sans: 'Inter', sans-serif; --font-serif: 'Playfair Display', serif; --color-primary: #ea580c; }
-  .font-serif { font-family: var(--font-serif); }
-  .font-sans { font-family: var(--font-sans); }
-  .animate-in { animation-duration: 0.6s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); animation-fill-mode: both; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .fade-in { animation-name: fadeIn; }
-  @keyframes zoomIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-  .zoom-in, .zoom-in-95 { animation-name: zoomIn; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
-  .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-  .backdrop-blur-md { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-` : "";
+// const PREVIEW_STYLES = deployment_type === "preview" ? `
+//   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&family=Inter:wght@300;400;600;800&display=swap');
+//   :root { --font-sans: 'Inter', sans-serif; --font-serif: 'Playfair Display', serif; --color-primary: #ea580c; }
+//   .font-serif { font-family: var(--font-serif); }
+//   .font-sans { font-family: var(--font-sans); }
+//   .animate-in { animation-duration: 0.6s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); animation-fill-mode: both; }
+//   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+//   .fade-in { animation-name: fadeIn; }
+//   @keyframes zoomIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+//   .zoom-in, .zoom-in-95 { animation-name: zoomIn; }
+//   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+//   .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+//   .backdrop-blur-md { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+// ` : "";
 
 // -- Inline Data for Preview --
 
@@ -83,6 +121,39 @@ const PREVIEW_STYLES = deployment_type === "preview" ? `
 
 // // REPLACE THIS WITH YOUR ACTUAL GOOGLE FORM EMBED URL
 // const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfD_placeholder_id/viewform?embedded=true"; 
+
+// const DELIVERY_ZONES = {
+//   "560001": { "area": "City Market / MG Road", "zone": "Central", "fee": 40 },
+//   "560008": { "area": "Ulsoor / Indiranagar", "zone": "Central", "fee": 40 },
+//   "560038": { "area": "Indiranagar", "zone": "Central", "fee": 40 },
+//   "560025": { "area": "Richmond Town", "zone": "Central", "fee": 40 },
+//   "560042": { "area": "Halasuru", "zone": "Central", "fee": 40 },
+
+//   "560102": { "area": "HSR Layout", "zone": "South", "fee": 70 },
+//   "560034": { "area": "Koramangala", "zone": "South", "fee": 70 },
+//   "560041": { "area": "Jayanagar", "zone": "South", "fee": 70 },
+//   "560078": { "area": "JP Nagar", "zone": "South", "fee": 70 },
+//   "560029": { "area": "BTM Layout", "zone": "South", "fee": 70 },
+
+//   "560066": { "area": "Whitefield", "zone": "East", "fee": 100 },
+//   "560037": { "area": "Marathahalli", "zone": "East", "fee": 100 },
+//   "560048": { "area": "Mahadevapura", "zone": "East", "fee": 100 },
+//   "560036": { "area": "KR Puram", "zone": "East", "fee": 100 },
+
+//   "560003": { "area": "Malleshwaram", "zone": "West", "fee": 80 },
+//   "560010": { "area": "Rajajinagar", "zone": "West", "fee": 80 },
+//   "560040": { "area": "Vijayanagar", "zone": "West", "fee": 80 },
+
+//   "560024": { "area": "Hebbal", "zone": "North", "fee": 90 },
+//   "560092": { "area": "Sahakara Nagar", "zone": "North", "fee": 90 },
+//   "560064": { "area": "Yelahanka", "zone": "North", "fee": 120 },
+
+//   "560100": { "area": "Electronic City Ph 1", "zone": "Outskirts", "fee": 150 },
+//   "560105": { "area": "Electronic City Ph 2", "zone": "Outskirts", "fee": 150 },
+//   "560060": { "area": "Kengeri", "zone": "Outskirts", "fee": 150 },
+//   "560067": { "area": "Kadugodi", "zone": "Outskirts", "fee": 120 }
+// };
+
 
 // const PRODUCTS = [
 //   {
@@ -164,7 +235,7 @@ const PREVIEW_STYLES = deployment_type === "preview" ? `
 
 // --- Helper Functions ---
 
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
+/*const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
   const R = 6371; // Earth radius in km
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -182,12 +253,13 @@ const calculateDeliveryFee = (distance) => {
   if (distance <= 5) return 40;
   if (distance <= 10) return 80;
   return 80 + Math.ceil(distance - 10) * 10; // Base ₹80 + ₹10 per extra km
-};
+};*/
 
 // --- Components ---
 
-const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocationModalOpen, isDarkMode, toggleTheme }) => {
+const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocationModalOpen, isDarkMode, toggleTheme, user, onLoginClick, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isAdmin = user && user.role === 'admin';
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b transition-all duration-300 ${isDarkMode ? 'bg-stone-950/80 border-stone-800' : 'bg-white/80 border-white/20'}`}>
@@ -200,7 +272,7 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
 
           {/* Desktop Nav */}
           <div className={`hidden md:flex items-center space-x-1 p-1.5 rounded-full border shadow-sm ${isDarkMode ? 'bg-stone-900 border-stone-800' : 'bg-stone-100 border-stone-200'}`}>
-            {['home', 'products', 'portfolio', 'about', 'admin'].map((item) => (
+            {['home', 'products', 'portfolio', 'about'].map((item) => (
               <button 
                 key={item}
                 onClick={() => onViewChange(item)}
@@ -213,6 +285,19 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
                 {item.charAt(0).toUpperCase() + item.slice(1)}
               </button>
             ))}
+            {/* Conditional Admin Tab */}
+            {isAdmin && (
+              <button 
+                onClick={() => onViewChange('admin')}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+                  currentView === 'admin' 
+                    ? 'bg-red-600 text-white shadow-md transform scale-105' 
+                    : (isDarkMode ? 'text-red-400 hover:bg-stone-800' : 'text-red-600 hover:bg-red-50')
+                }`}
+              >
+                Admin
+              </button>
+            )}
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -223,13 +308,33 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
             >
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            {/* Login / Logout Button */}
+            {user ? (
+              <div className="flex items-center gap-4">
+                <span className={`text-sm font-medium hidden lg:block ${isDarkMode ? 'text-stone-400' : 'text-stone-600'}`}>Hi, {user.email?.split('@')[0]}</span>
+                <button 
+                  onClick={onLogout}
+                  className={`p-3 rounded-full transition-all shadow-sm hover:shadow border ${isDarkMode ? 'bg-stone-900 text-red-400 border-stone-800 hover:bg-stone-800' : 'bg-white text-red-600 border-stone-200 hover:bg-red-50'}`}
+                  title="Logout"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={onLoginClick}
+                className={`flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow border ${isDarkMode ? 'bg-stone-900 text-orange-500 border-stone-800 hover:bg-stone-800' : 'bg-white text-orange-600 border-stone-200 hover:bg-orange-50'}`}
+              >
+                <LogIn size={18} /> Login
+              </button>
+            )}
 
             <button 
               onClick={() => setIsLocationModalOpen(true)}
               className={`flex items-center space-x-2 px-5 py-3 rounded-full transition-all shadow-sm hover:shadow border group ${isDarkMode ? 'bg-stone-900 text-stone-100 border-stone-800 hover:bg-stone-800' : 'bg-white text-stone-700 border-stone-200 hover:bg-orange-50'}`}
             >
               <MapPin size={18} className="text-orange-500 group-hover:scale-110 transition-transform" />
-              <span className="truncate max-w-[120px] text-sm font-semibold">{locationData.address || "Set Location"}</span>
+              <span className="truncate max-w-[120px] text-sm font-semibold">{locationData.pincode || "Set Pincode"}</span>
             </button>
 
             <button 
@@ -268,7 +373,7 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
       {isMenuOpen && (
         <div className={`md:hidden border-t absolute w-full shadow-xl rounded-b-3xl ${isDarkMode ? 'bg-stone-950 border-stone-800' : 'bg-white border-stone-100'}`}>
           <div className="px-6 py-6 space-y-2">
-            {['home', 'products', 'portfolio', 'about', 'admin'].map((item) => (
+            {['home', 'products', 'portfolio', 'about'].map((item) => (
               <button 
                 key={item}
                 onClick={() => { onViewChange(item); setIsMenuOpen(false); }}
@@ -277,16 +382,37 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
                 {item.charAt(0).toUpperCase() + item.slice(1)}
               </button>
             ))}
-            <div className="flex gap-4 pt-4 border-t border-stone-800/20">
+            {isAdmin && (
               <button 
-                onClick={toggleTheme} 
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-bold rounded-2xl ${isDarkMode ? 'bg-stone-900 text-stone-100' : 'bg-stone-100 text-stone-700'}`}
+                onClick={() => { onViewChange('admin'); setIsMenuOpen(false); }}
+                className={`block w-full text-left px-4 py-3 font-bold rounded-2xl transition-colors text-red-500 hover:bg-red-50`}
               >
-                {isDarkMode ? <Sun size={18}/> : <Moon size={18}/>} Theme
+                Admin
               </button>
-              <button onClick={() => { setIsLocationModalOpen(true); setIsMenuOpen(false); }} className={`flex-2 flex-grow block text-left px-4 py-3 font-bold rounded-2xl flex items-center ${isDarkMode ? 'text-stone-300 hover:bg-stone-900' : 'text-stone-700 hover:bg-orange-50'}`}>
-                <MapPin size={18} className="mr-3 text-orange-500"/> {locationData.address || "Set Location"}
-              </button>
+            )}
+            
+            <div className="flex gap-4 pt-4 border-t border-stone-800/20 flex-col">
+              {user ? (
+                <button onClick={onLogout} className={`flex items-center gap-2 px-4 py-3 font-bold rounded-2xl text-red-500`}>
+                  <LogOut size={18}/> Logout ({user.email})
+                </button>
+              ) : (
+                <button onClick={() => { onLoginClick(); setIsMenuOpen(false); }} className={`flex items-center gap-2 px-4 py-3 font-bold rounded-2xl text-orange-500`}>
+                  <LogIn size={18}/> Login
+                </button>
+              )}
+              
+              <div className="flex gap-4">
+                <button 
+                  onClick={toggleTheme} 
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-bold rounded-2xl ${isDarkMode ? 'bg-stone-900 text-stone-100' : 'bg-stone-100 text-stone-700'}`}
+                >
+                  {isDarkMode ? <Sun size={18}/> : <Moon size={18}/>} Theme
+                </button>
+                <button onClick={() => { setIsLocationModalOpen(true); setIsMenuOpen(false); }} className={`flex-2 flex-grow block text-left px-4 py-3 font-bold rounded-2xl flex items-center ${isDarkMode ? 'text-stone-300 hover:bg-stone-900' : 'text-stone-700 hover:bg-orange-50'}`}>
+                  <MapPin size={18} className="mr-3 text-orange-500"/> {locationData.pincode || "Set Pincode"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -295,56 +421,130 @@ const Header = ({ cartCount, onViewChange, currentView, locationData, setIsLocat
   );
 };
 
-const LocationModal = ({ isOpen, onClose, onSetLocation }) => {
-  const [manualZip, setManualZip] = useState("");
+const LoginModal = ({ isOpen, onClose, isDarkMode }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false); // Toggle state
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      if (isSignUp) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+      onClose();
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') {
+        setError("Email already in use.");
+      } else if (err.code === 'auth/weak-password') {
+        setError("Password should be at least 6 characters.");
+      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError("Invalid email or password.");
+      } else {
+        setError(isSignUp ? "Failed to sign up. Please try again." : "Failed to sign in. Please try again.");
+      }
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMode = () => { setIsSignUp(!isSignUp); setError(''); setEmail(''); setPassword(''); };
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
+      <div className={`rounded-[2rem] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 relative ${isDarkMode ? 'bg-stone-900 border border-stone-800' : 'bg-white'}`}>
+        <button onClick={onClose} className={`absolute top-6 right-6 p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-stone-800 text-stone-400' : 'hover:bg-stone-100 text-stone-500'}`}>
+          <X size={24} />
+        </button>
+        
+        <div className="text-center mb-8">
+          <h2 className={`text-3xl font-extrabold mb-2 ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
+            {isSignUp ? "Join Crumbs" : "Welcome Back"}
+          </h2>
+          <p className={isDarkMode ? 'text-stone-400' : 'text-stone-500'}>
+            {isSignUp ? "Create an account to start ordering" : "Sign in to access your account"}
+          </p>
+        </div>
+
+        <form onSubmit={handleAuth} className="space-y-6">
+          <div>
+            <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>Email</label>
+            <input 
+              type="email" 
+              required 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              className={`w-full p-4 rounded-xl font-medium outline-none border-2 transition-all ${isDarkMode ? 'bg-stone-950 border-stone-800 text-white focus:border-orange-500' : 'bg-stone-50 border-stone-100 text-stone-900 focus:border-orange-500'}`}
+              placeholder="you@example.com"
+            />
+          </div>
+          <div>
+            <label className={`block text-xs font-bold uppercase tracking-widest mb-2 ${isDarkMode ? 'text-stone-500' : 'text-stone-400'}`}>Password</label>
+            <input 
+              type="password" 
+              required 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              className={`w-full p-4 rounded-xl font-medium outline-none border-2 transition-all ${isDarkMode ? 'bg-stone-950 border-stone-800 text-white focus:border-orange-500' : 'bg-stone-50 border-stone-100 text-stone-900 focus:border-orange-500'}`}
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && <div className="text-red-500 text-sm text-center font-bold bg-red-500/10 p-3 rounded-lg">{error}</div>}
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-orange-500/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {loading ? (isSignUp ? 'Creating Account...' : 'Signing In...') : (isSignUp ? 'Sign Up' : 'Sign In')}
+          </button>
+        </form>
+        
+        <div className="mt-6 text-center">
+          <p className={`text-sm ${isDarkMode ? 'text-stone-400' : 'text-stone-600'}`}>
+            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button onClick={toggleMode} className="text-orange-600 font-bold hover:underline">
+              {isSignUp ? "Sign In" : "Sign Up"}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LocationModal = ({ isOpen, onClose, onSetLocation, isDarkMode }) => {
+  const [manualZip, setManualZip] = useState("");
   const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
-  const handleGeoLocation = () => {
-    setLoading(true);
-    setError("");
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported.");
-      setLoading(false);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        onSetLocation({
-          type: 'geo',
-          lat: latitude,
-          lng: longitude,
-          address: `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`,
-          pincode: null
-        });
-        setLoading(false);
-        onClose();
-      },
-      () => {
-        setError("Unable to retrieve location.");
-        setLoading(false);
-      }
-    );
-  };
-
   const handleManualSubmit = (e) => {
     e.preventDefault();
-    if (manualZip.length < 6) {
-      setError("Please enter a valid 6-digit Pincode");
+    const zoneInfo = DELIVERY_ZONES[manualZip];
+    
+    if (!zoneInfo) {
+      setError("Sorry, this pincode is not serviced yet and might be added at a later point.");
       return;
     }
-    const mockLat = SHOP_LOCATION.lat + (Math.random() * 0.05 - 0.025); 
-    const mockLng = SHOP_LOCATION.lng + (Math.random() * 0.05 - 0.025);
 
     onSetLocation({
       type: 'manual',
-      lat: mockLat,
-      lng: mockLng,
-      address: `Pincode: ${manualZip}`,
-      pincode: manualZip
+      pincode: manualZip,
+      area: zoneInfo.area,
+      fee: zoneInfo.fee,
+      zone: zoneInfo.zone,
+      address: `${zoneInfo.area} (${manualZip})`
     });
     onClose();
   };
@@ -357,17 +557,25 @@ const LocationModal = ({ isOpen, onClose, onSetLocation }) => {
           <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X size={24} className="text-stone-400" /></button>
         </div>
         <div className="space-y-6">
-          <button onClick={handleGeoLocation} disabled={loading} className="w-full flex items-center justify-center space-x-3 bg-orange-600 hover:bg-orange-700 text-white p-5 rounded-2xl font-bold transition-all shadow-lg hover:shadow-orange-200 active:scale-95">
-            {loading ? <span>Locating...</span> : <><Navigation size={20} /><span>Use My Current Location</span></>}
-          </button>
-          <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-stone-200" /></div><div className="relative flex justify-center text-xs uppercase font-bold tracking-widest"><span className="bg-white px-4 text-stone-400">Or enter pincode</span></div></div>
           <form onSubmit={handleManualSubmit}>
             <div className="space-y-4">
               <div>
-                <input type="text" value={manualZip} onChange={(e) => setManualZip(e.target.value)} placeholder="e.g. 560067" className="w-full p-4 bg-stone-50 border border-stone-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none font-medium transition-all" />
+                <label className="block text-stone-500 font-bold text-sm uppercase tracking-wide mb-2">Enter Pincode</label>
+                <input 
+                  type="text" 
+                  value={manualZip} 
+                  onChange={(e) => setManualZip(e.target.value)} 
+                  placeholder="e.g. 560067" 
+                  className={`w-full p-4 bg-stone-50 border border-stone-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none font-medium transition-all ${isDarkMode ? 'bg-stone-950 border-stone-800 text-white focus:border-orange-500' : 'bg-stone-50 border-stone-100 text-stone-900 focus:border-orange-500'}`} 
+                />
               </div>
               {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-              <button type="submit" className="w-full bg-stone-100 hover:bg-stone-200 text-stone-900 font-bold p-4 rounded-2xl transition-colors">Set Location</button>
+              <button 
+                type="submit" 
+                className="w-full bg-stone-900 hover:bg-orange-600 text-white font-bold p-4 rounded-2xl transition-colors shadow-lg"
+              >
+                Set Location
+              </button>
             </div>
           </form>
         </div>
@@ -376,7 +584,7 @@ const LocationModal = ({ isOpen, onClose, onSetLocation }) => {
   );
 };
 
-const AdminDashboard = ({ isDarkMode }) => {
+const AdminDashboard = ({ isDarkMode, user }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('pending');
@@ -386,16 +594,26 @@ const AdminDashboard = ({ isDarkMode }) => {
   const [actionType, setActionType] = useState(null); // 'accepted' or 'rejected'
 
   const fetchOrders = async () => {
+    if (!user) return;
     setLoading(true);
     try {
+      const token = await user.getIdToken();
       let query = `${BACKEND_API_URL}/orders?status=${filterStatus}`;
       
       if (dateRange === '7days') query += `&relativeDays=7`;
       else if (dateRange === '30days') query += `&relativeDays=30`;
       
-      // Note: In a real app you might handle specific date ranges here
+      const res = await fetch(query, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      const res = await fetch(query);
+      if (res.status === 403) {
+        alert("Unauthorized access");
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         setOrders(data.orders);
@@ -409,15 +627,19 @@ const AdminDashboard = ({ isDarkMode }) => {
 
   useEffect(() => {
     fetchOrders();
-  }, [filterStatus, dateRange]);
+  }, [filterStatus, dateRange, user]);
 
   const handleStatusChange = async () => {
-    if (!actionOrder || !actionType) return;
+    if (!actionOrder || !actionType || !user) return;
 
     try {
+      const token = await user.getIdToken();
       const res = await fetch(`${BACKEND_API_URL}/orders/${actionOrder.id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           status: actionType,
           message: actionMessage
@@ -435,6 +657,28 @@ const AdminDashboard = ({ isDarkMode }) => {
       console.error("Failed to update status", error);
     }
   };
+  
+   const handleExport = async () => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      let query = `${BACKEND_API_URL}/orders/export?`;
+      if (dateRange === '7days') query += `relativeDays=7`;
+      else if (dateRange === '30days') query += `relativeDays=30`;
+      
+      const res = await fetch(query, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `orders_export_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    } catch (error) { console.error("Export failed", error); }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -442,6 +686,7 @@ const AdminDashboard = ({ isDarkMode }) => {
         <h1 className={`text-4xl font-extrabold font-serif ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>Order Dashboard</h1>
         
         <div className="flex flex-wrap gap-4">
+          <button onClick={handleExport} className={`flex items-center gap-2 py-3 px-5 rounded-2xl font-bold transition-all shadow-sm ${isDarkMode ? 'bg-stone-800 text-stone-100 hover:bg-stone-700' : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'}`}><Download size={18} /> Export CSV</button>
           <div className="relative">
             <select 
               value={filterStatus} 
@@ -450,6 +695,7 @@ const AdminDashboard = ({ isDarkMode }) => {
             >
               <option value="pending">Pending</option>
               <option value="accepted">Accepted</option>
+              <option value="completed">Completed</option>
               <option value="rejected">Rejected</option>
               <option value="all">All Orders</option>
             </select>
@@ -471,14 +717,13 @@ const AdminDashboard = ({ isDarkMode }) => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-20 text-stone-500">Loading orders...</div>
+      {loading ? (<div className="text-center py-20 text-stone-500">Loading orders...</div>
       ) : orders.length === 0 ? (
-        <div className={`text-center py-20 rounded-[2.5rem] border ${isDarkMode ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-100'}`}>
-          <div className={`p-4 rounded-full inline-block mb-4 shadow-sm ${isDarkMode ? 'bg-stone-800' : 'bg-white'}`}><FileText size={40} className="text-stone-300" /></div>
-          <h3 className={`text-xl font-bold ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>No orders found</h3>
-          <p className="text-stone-500">Adjust filters to see results.</p>
-        </div>
+      <div className={`text-center py-20 rounded-[2.5rem] border ${isDarkMode ? 'bg-stone-900 border-stone-800' : 'bg-stone-50 border-stone-100'}`}>
+      <div className={`p-4 rounded-full inline-block mb-4 shadow-sm ${isDarkMode ? 'bg-stone-800' : 'bg-white'}`}><FileText size={40} className="text-stone-300" /></div>
+      <h3 className={`text-xl font-bold ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>No orders found</h3>
+      <p className="text-stone-500">Adjust filters to see results.</p>
+      </div>
       ) : (
         <div className="grid gap-6">
           {orders.map(order => (
@@ -486,58 +731,27 @@ const AdminDashboard = ({ isDarkMode }) => {
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-3">
                   <span className="font-mono text-sm text-stone-400">#{order.id}</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    order.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
-                    {order.status}
-                  </span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : order.status === 'accepted' ? 'bg-blue-100 text-blue-700' : order.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{order.status}</span>
                   <span className="text-sm font-medium text-stone-500">{new Date(order.created_at).toLocaleDateString()}</span>
                 </div>
                 <h3 className={`text-xl font-bold mb-1 ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>{order.customer_name}</h3>
                 <p className="text-stone-500 text-sm mb-4">{order.delivery_address}</p>
-                
-                {order.items && (
-                  <div className={`p-4 rounded-2xl mb-4 text-sm space-y-1 ${isDarkMode ? 'bg-stone-800 text-stone-300' : 'bg-stone-50 text-stone-700'}`}>
-                    {order.items.map((item, idx) => (
-                      <div key={idx} className="flex justify-between">
-                        <span>{item.quantity}x {item.name}</span>
-                        <span className="font-bold">₹{item.total}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                <div className="flex gap-2 text-stone-500 text-xs">
-                  {order.order_notes && <span className="bg-orange-50 text-orange-700 px-2 py-1 rounded-lg">Note: {order.order_notes}</span>}
-                </div>
+                {order.items && (<div className={`p-4 rounded-2xl mb-4 text-sm space-y-1 ${isDarkMode ? 'bg-stone-800 text-stone-300' : 'bg-stone-50 text-stone-700'}`}>{order.items.map((item, idx) => (<div key={idx} className="flex justify-between"><span>{item.quantity}x {item.name}</span><span className="font-bold">₹{item.total}</span></div>))}</div>)}
+                <div className="flex gap-2 text-stone-500 text-xs">{order.order_notes && <span className="bg-orange-50 text-orange-700 px-2 py-1 rounded-lg">Note: {order.order_notes}</span>}</div>
               </div>
-
               <div className="flex flex-col items-end justify-between min-w-[150px]">
-                <div className="text-right">
-                  <span className="block text-xs text-stone-400 font-bold uppercase">Total</span>
-                  <span className={`text-2xl font-black ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>₹{order.total_amount}</span>
+                <div className="text-right"><span className="block text-xs text-stone-400 font-bold uppercase">Total</span><span className={`text-2xl font-black ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>₹{order.total_amount}</span></div>
+                <div className="flex gap-3 mt-4 md:mt-0">
+                  {order.status === 'pending' && (
+                    <>
+                      <button onClick={() => { setActionOrder(order); setActionType('rejected'); }} className={`p-3 rounded-xl transition-colors ${isDarkMode ? 'bg-stone-800 hover:bg-red-900 text-stone-400 hover:text-red-400' : 'bg-stone-100 hover:bg-red-100 text-stone-400 hover:text-red-600'}`} title="Reject"><XCircle size={24} /></button>
+                      <button onClick={() => { setActionOrder(order); setActionType('accepted'); }} className={`p-3 text-white rounded-xl transition-colors shadow-lg ${isDarkMode ? 'bg-stone-800 hover:bg-blue-600' : 'bg-stone-900 hover:bg-blue-600 hover:shadow-blue-200'}`} title="Accept"><CheckCircle size={24} /></button>
+                    </>
+                  )}
+                  {order.status === 'accepted' && (
+                    <button onClick={() => { setActionOrder(order); setActionType('completed'); }} className="p-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors shadow-lg" title="Mark Complete"><PackageCheck size={24} /></button>
+                  )}
                 </div>
-
-                {order.status === 'pending' && (
-                  <div className="flex gap-3 mt-4 md:mt-0">
-                    <button 
-                      onClick={() => { setActionOrder(order); setActionType('rejected'); }}
-                      className={`p-3 rounded-xl transition-colors ${isDarkMode ? 'bg-stone-800 hover:bg-red-900 text-stone-400 hover:text-red-400' : 'bg-stone-100 hover:bg-red-100 text-stone-400 hover:text-red-600'}`}
-                      title="Reject"
-                    >
-                      <XCircle size={24} />
-                    </button>
-                    <button 
-                      onClick={() => { setActionOrder(order); setActionType('accepted'); }}
-                      className={`p-3 text-white rounded-xl transition-colors shadow-lg ${isDarkMode ? 'bg-stone-800 hover:bg-green-600' : 'bg-stone-900 hover:bg-green-600 hover:shadow-green-200'}`}
-                      title="Accept"
-                    >
-                      <CheckCircle size={24} />
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           ))}
@@ -547,36 +761,13 @@ const AdminDashboard = ({ isDarkMode }) => {
       {/* Action Modal */}
       {actionOrder && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95">
-            <h3 className="text-2xl font-bold text-stone-900 mb-4">
-              {actionType === 'accepted' ? 'Accept Order' : 'Reject Order'}
-            </h3>
-            <p className="text-stone-600 mb-6">
-              You are about to {actionType} order #{actionOrder.id} from {actionOrder.customer_name}.
-            </p>
-            
-            <textarea 
-              value={actionMessage}
-              onChange={(e) => setActionMessage(e.target.value)}
-              placeholder="Optional message to customer..."
-              className="w-full p-4 bg-stone-50 border rounded-2xl mb-6 focus:ring-2 focus:ring-orange-500 outline-none resize-none h-32 ${isDarkMode ? 'bg-stone-800 border-stone-700 text-stone-100 focus:bg-stone-900' : 'bg-white border-stone-200 text-stone-700 focus:bg-white'}"
-            />
-
+          <div className={`rounded-[2rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 ${isDarkMode ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100'}`}>
+            <h3 className={`text-2xl font-bold b-4 ${isDarkMode ? 'text-white focus:border-orange-500' : 'text-stone-900'}`}>{actionType === 'accepted' ? 'Accept Order' : actionType === 'completed' ? 'Complete Order' : 'Reject Order'}</h3>
+            <p className="text-stone-600 mb-6">You are about to {actionType} order #{actionOrder.id} from {actionOrder.customer_name}.</p>
+            <textarea value={actionMessage} onChange={(e) => setActionMessage(e.target.value)} placeholder="Optional message to customer..." className={`w-full p-4 rounded-2xl mb-6 focus:ring-2 focus:ring-orange-500 outline-none resize-none h-32 ${isDarkMode ? 'bg-stone-950 border-stone-800 text-white focus:border-orange-500' : 'bg-stone-50 border-stone-100 text-stone-900 focus:border-orange-500'}`} />
             <div className="flex gap-4">
-              <button 
-                onClick={() => { setActionOrder(null); setActionMessage(''); setActionType(null); }}
-                className="flex-1 py-4 font-bold text-stone-500 hover:bg-stone-50 rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleStatusChange}
-                className={`flex-1 py-4 font-bold text-white rounded-xl shadow-lg transition-transform active:scale-95 ${
-                  actionType === 'accepted' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-                }`}
-              >
-                Confirm {actionType === 'accepted' ? 'Accept' : 'Reject'}
-              </button>
+              <button onClick={() => { setActionOrder(null); setActionMessage(''); setActionType(null); }} className="flex-1 py-4 font-bold text-stone-500 hover:bg-stone-50 rounded-xl transition-colors">Cancel</button>
+              <button onClick={handleStatusChange} className={`flex-1 py-4 font-bold text-white rounded-xl shadow-lg transition-transform active:scale-95 ${actionType === 'accepted' ? 'bg-blue-600 hover:bg-blue-700' : actionType === 'completed' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>Confirm</button>
             </div>
           </div>
         </div>
@@ -598,9 +789,7 @@ const ProductCard = ({ product, cart, addToCart, updateQuantity, removeFromCart,
   return (
     <div className={`group rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-300 border flex flex-col h-full relative ${isDarkMode ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100'}`}>
       <div className={`relative h-72 overflow-hidden ${isDarkMode ? 'bg-stone-950' : 'bg-stone-100'}`}>
-        {product.isDeal && (
-          <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur text-orange-600 text-xs font-black px-4 py-1.5 rounded-full shadow-sm">HOT DEAL</div>
-        )}
+        {product.isDeal && (<div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur text-orange-600 text-xs font-black px-4 py-1.5 rounded-full shadow-sm">HOT DEAL</div>)}
         <img src={imgSrc} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/>
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
@@ -608,10 +797,7 @@ const ProductCard = ({ product, cart, addToCart, updateQuantity, removeFromCart,
       <div className="p-8 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-3">
           <div className={`text-xs font-bold text-orange-600 uppercase tracking-widest px-3 py-1 rounded-full ${isDarkMode ? 'bg-stone-800' : 'bg-orange-50'}`}>{product.category}</div>
-          <div className="flex flex-col items-end">
-             {product.isDeal && <span className="text-sm text-stone-400 line-through font-medium">₹{product.price}</span>}
-             <span className={`text-xl font-extrabold ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>₹{displayPrice}</span>
-          </div>
+          <div className="flex flex-col items-end">{product.isDeal && <span className="text-sm text-stone-400 line-through font-medium">₹{product.price}</span>}<span className={`text-xl font-extrabold ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>₹{displayPrice}</span></div>
         </div>
         <h3 className={`text-2xl font-bold mb-3 leading-tight ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>{product.name}</h3>
         <p className={`text-sm mb-6 line-clamp-2 flex-grow leading-relaxed ${isDarkMode ? 'text-stone-400' : 'text-stone-500'}`}>{product.description}</p>
@@ -687,11 +873,11 @@ const AboutUs = ({ isDarkMode }) => {
     <div className={`py-24 animate-in fade-in duration-500 ${isDarkMode ? 'bg-stone-900' : 'bg-stone-50'}`}>
       <div className="max-w-6xl mx-auto px-6 lg:px-12">
         <div className="flex flex-col lg:flex-row items-center gap-16 mb-24">
-          <div className="w-full lg:w-1/2"><div className="relative group"><div className="absolute inset-0 bg-orange-200 rounded-[2.5rem] transform translate-x-4 translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6"></div><img src="https://images.unsplash.com/photo-1583332130317-de7cb8c0d953?auto=format&fit=crop&q=80&w=800" alt="Siddhi Rane - Baker" className="relative z-10 w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/5]"/></div></div>
+          <div className="w-full lg:w-1/2"><div className="relative group"><div className="absolute inset-0 bg-orange-200 rounded-[2.5rem] transform translate-x-4 translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6"></div><img src="/crumbs.a.microbakery/products/IMG_0868.jpg?auto=format&fit=crop&q=80&w=800" alt="Siddhi Rane - Baker" className="relative z-10 w-full rounded-[2.5rem] shadow-2xl object-cover aspect-[4/5]"/></div></div>
           <div className="w-full lg:w-1/2"><span className="text-orange-600 font-bold tracking-widest text-sm uppercase mb-2 block">Our Story</span><h1 className={`text-5xl md:text-6xl font-extrabold font-serif mb-6 leading-tight ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>Meet <br/>Siddhi Rane</h1><h3 className="text-xl text-stone-500 font-bold mb-8">Founder & Head Baker</h3><div className={`space-y-6 text-lg leading-relaxed ${isDarkMode ? 'text-stone-400' : 'text-stone-600'}`}><p>Welcome to Crumbs A Microbakery! My journey began in a small home kitchen with nothing but flour, water, and a dream. Baking isn't just a profession for me; it's a love language.</p><p>I believe that the secret to a perfect loaf lies in patience and purity. That's why every product that leaves my kitchen is handcrafted with the absolute best quality ingredients—no preservatives, no shortcuts, just pure, wholesome goodness.</p></div><div className="flex gap-6 mt-10"><div className={`flex flex-col items-center justify-center p-6 rounded-3xl shadow-sm w-36 border ${isDarkMode ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-100'}`}><span className="text-4xl font-black text-orange-500 mb-1">5+</span><span className="text-xs text-stone-400 font-bold uppercase tracking-wide">Years Baking</span></div><div className={`flex flex-col items-center justify-center p-6 rounded-3xl shadow-sm w-36 border ${isDarkMode ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-100'}`}><span className="text-4xl font-black text-orange-500 mb-1">100%</span><span className="text-xs text-stone-400 font-bold uppercase tracking-wide">Handmade</span></div></div></div>
         </div>
         <div className="text-center mb-16"><h2 className={`text-4xl font-extrabold mb-4 ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>Baked with Passion</h2><p className="text-stone-500 max-w-2xl mx-auto text-lg">A glimpse into the daily magic that happens in our kitchen.</p></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">{["https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=600","https://images.unsplash.com/photo-1621253457002-30cb1943899f?auto=format&fit=crop&q=80&w=600","https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&q=80&w=600"].map((src, index) => <div key={index} className="group overflow-hidden rounded-[2rem] shadow-lg h-80 relative"><img src={src} alt="Process" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/><div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div></div>)}</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">{["/crumbs.a.microbakery/products/IMG_5417.jpg?auto=format&fit=crop&q=80&w=600","/crumbs.a.microbakery/products/IMG_5757.jpg?auto=format&fit=crop&q=80&w=600","/crumbs.a.microbakery/products/IMG_6756.PNG?auto=format&fit=crop&q=80&w=600"].map((src, index) => <div key={index} className="group overflow-hidden rounded-[2rem] shadow-lg h-80 relative"><img src={src} alt="Process" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/><div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div></div>)}</div>
       </div>
     </div>
   );
@@ -725,27 +911,44 @@ const GoogleFormCheckout = ({ isOpen, onClose }) => {
   );
 };
 
-const Checkout = ({ cart, total, subtotal, deliveryFee, locationData, onBack, isDarkMode }) => {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', addressLine: locationData.address || '', notes: '' });
+const Checkout = ({ cart, total, subtotal, deliveryFee, locationData, onBack, isDarkMode, user, onLoginClick, onCheckoutSuccess }) => {
+  const [formData, setFormData] = useState({ name: '', email: user?.email || '', phone: '', addressLine: locationData.address || '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+
+  useEffect(() => {
+    if (user && user.email) {
+      setFormData(prev => ({...prev, email: user.email}));
+    }
+  }, [user]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      onLoginClick();
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus(null);
-    const payload = { user_id: "dummy", customer_details: formData, cart_items: cart, subtotal: subtotal, delivery_fee: deliveryFee, total: total };
+    const payload = { user_id: user.uid, customer_details: formData, cart_items: cart, subtotal: subtotal, delivery_fee: deliveryFee, total: total };
+    
     try {
+      const token = await user.getIdToken();
       const response = await fetch(`${BACKEND_API_URL}/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify(payload),
       });
       const data = await response.json();
       if (response.ok && data.success) {
         setSubmitStatus('success');
+        if (onCheckoutSuccess) onCheckoutSuccess();
       } else {
         setSubmitStatus('error');
         console.error("Order failed:", data.error);
@@ -776,18 +979,27 @@ const Checkout = ({ cart, total, subtotal, deliveryFee, locationData, onBack, is
       <button onClick={onBack} className="flex items-center text-stone-500 hover:text-orange-600 mb-8 font-bold transition-colors"><ArrowLeft size={20} className="mr-2" /> Back to Cart</button>
       <div className={`rounded-[2.5rem] shadow-2xl overflow-hidden border ${isDarkMode ? 'bg-stone-900 border-stone-800' : 'bg-white border-stone-100'}`}>
         <div className="bg-stone-900 p-10 text-white"><h2 className="text-3xl font-extrabold mb-2">Checkout Details</h2><p className="text-stone-400">Enter your details to place the order instantly.</p></div>
-        <form onSubmit={handleSubmit} className="p-10 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Full Name</label><input required name="name" type="text" value={formData.name} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="John Doe" /></div>
-            <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Phone Number</label><input required name="phone" type="tel" value={formData.phone} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="+91 98765 43210" /></div>
+        
+        {user ? (
+          <form onSubmit={handleSubmit} className="p-10 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Full Name</label><input required name="name" type="text" value={formData.name} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="John Doe" /></div>
+              <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Phone Number</label><input required name="phone" type="tel" value={formData.phone} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="+91 98765 43210" /></div>
+            </div>
+            <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Email Address</label><input required name="email" type="email" value={formData.email} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="john@example.com" disabled /></div>
+            <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Delivery Address</label><textarea required name="addressLine" rows="3" value={formData.addressLine} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="#123, Street Name, Area, Bangalore - 560067"></textarea></div>
+            <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Order Notes (Optional)</label><input name="notes" type="text" value={formData.notes} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="Leave at gate, less sugar, etc." /></div>
+            <div className={`p-6 rounded-2xl border mt-8 ${isDarkMode ? 'bg-stone-800 border-stone-700' : 'bg-orange-50 border-orange-100'}`}><div className={`flex justify-between items-center font-black text-xl ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}><span>Total to Pay</span><span className="text-orange-600">₹{total.toFixed(2)}</span></div><p className="text-sm text-stone-500 mt-2 font-medium">Payment to be made upon confirmation.</p></div>
+            {submitStatus === 'error' && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-center font-bold">Something went wrong. Please try again.</div>}
+            <button type="submit" disabled={isSubmitting} className={`w-full bg-stone-900 hover:bg-orange-600 text-white font-black text-lg py-5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl hover:shadow-orange-200 hover:-translate-y-1 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}>{isSubmitting ? <span>Processing...</span> : <><Send size={24} /> Place Order</>}</button>
+          </form>
+        ) : (
+          <div className="p-12 text-center">
+            <h3 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>Please Login to Order</h3>
+            <p className="text-stone-500 mb-8">You need to be signed in to place an order.</p>
+            <button onClick={onLoginClick} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg transition-all">Sign In / Register</button>
           </div>
-          <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Email Address</label><input required name="email" type="email" value={formData.email} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="john@example.com" /></div>
-          <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Delivery Address</label><textarea required name="addressLine" rows="3" value={formData.addressLine} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="#123, Street Name, Area, Bangalore - 560067"></textarea></div>
-          <div><label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${isDarkMode ? 'text-stone-400' : 'text-stone-700'}`}>Order Notes (Optional)</label><input name="notes" type="text" value={formData.notes} onChange={handleChange} className={`w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-medium ${isDarkMode ? 'bg-stone-950 border-stone-800 text-stone-100 focus:bg-stone-900' : 'bg-stone-50 border-stone-200 focus:bg-white'}`} placeholder="Leave at gate, less sugar, etc." /></div>
-          <div className={`p-6 rounded-2xl border mt-8 ${isDarkMode ? 'bg-stone-800 border-stone-700' : 'bg-orange-50 border-orange-100'}`}><div className={`flex justify-between items-center font-black text-xl ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}><span>Total to Pay</span><span className="text-orange-600">₹{total.toFixed(2)}</span></div><p className="text-sm text-stone-500 mt-2 font-medium">Payment to be made upon confirmation.</p></div>
-          {submitStatus === 'error' && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-center font-bold">Something went wrong. Please try again.</div>}
-          <button type="submit" disabled={isSubmitting} className={`w-full bg-stone-900 hover:bg-orange-600 text-white font-black text-lg py-5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl hover:shadow-orange-200 hover:-translate-y-1 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}>{isSubmitting ? <span>Processing...</span> : <><Send size={24} /> Place Order</>}</button>
-        </form>
+        )}
       </div>
     </div>
   );
@@ -797,10 +1009,9 @@ const Cart = ({ cart, updateQuantity, removeFromCart, locationData, onCheckout, 
   const [showGoogleForm, setShowGoogleForm] = useState(false);
   const subtotal = cart.reduce((sum, item) => sum + (item.isDeal ? item.discountPrice : item.price) * item.quantity, 0);
   let distance = 0, deliveryFee = 0, deliveryMsg = "Please set location";
-  if (locationData.lat && locationData.lng) {
-    distance = calculateDistance(locationData.lat, locationData.lng, SHOP_LOCATION.lat, SHOP_LOCATION.lng);
-    deliveryFee = calculateDeliveryFee(distance);
-    deliveryMsg = `${distance.toFixed(1)} km`;
+  if (locationData.fee !== undefined) {
+    deliveryFee = locationData.fee;
+    deliveryMsg = locationData.zone;
   }
 
   const total = subtotal + deliveryFee;
@@ -808,9 +1019,7 @@ const Cart = ({ cart, updateQuantity, removeFromCart, locationData, onCheckout, 
   if (cart.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <div className={`p-8 rounded-full mb-6 animate-in zoom-in ${isDarkMode ? 'bg-stone-900' : 'bg-orange-50'}`}>
-	<ShoppingBag size={64} className="text-orange-400" />
-	</div>
+        <div className={`p-8 rounded-full mb-6 animate-in zoom-in ${isDarkMode ? 'bg-stone-900' : 'bg-orange-50'}`}><ShoppingBag size={64} className="text-orange-400" /></div>
         <h2 className={`text-3xl font-black mb-2 ${isDarkMode ? 'text-stone-100' : 'text-stone-900'}`}>Cart is empty</h2>
         <p className="text-stone-500 mb-8 font-medium">Looks like you haven't added any treats yet.</p>
       </div>
@@ -855,8 +1064,6 @@ const Cart = ({ cart, updateQuantity, removeFromCart, locationData, onCheckout, 
             
             <div className="space-y-4">
               <button onClick={() => onCheckout({ subtotal, deliveryFee, total })} disabled={!locationData.address} className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all ${locationData.address ? 'bg-stone-900 text-white hover:bg-orange-600 shadow-xl hover:shadow-orange-200 hover:-translate-y-1' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}>Proceed to Checkout <ChevronRight size={20} /></button>
-              <div className="relative flex items-center py-2"><div className={`flex-grow border-t ${isDarkMode ? 'border-stone-800' : 'border-stone-200'}`}></div><span className="flex-shrink-0 mx-4 text-stone-400 text-sm font-bold">OR</span><div className={`flex-grow border-t ${isDarkMode ? 'border-stone-800' : 'border-stone-200'}`}></div></div>
-              <button onClick={() => setShowGoogleForm(true)} className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all border-2 ${isDarkMode ? 'bg-stone-950 text-stone-300 border-stone-800 hover:border-orange-500 hover:text-orange-500' : 'bg-white text-stone-800 border-stone-100 hover:border-orange-500 hover:text-orange-600'}`}><FileText size={20} /> Checkout via Google Form</button>
             </div>
             
             {!locationData.address && <p className="text-center text-sm text-stone-400 mt-4 font-medium">Please set location to proceed.</p>}
@@ -879,9 +1086,52 @@ const App = () => {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [locationData, setLocationData] = useState(() => { try { const savedLoc = sessionStorage.getItem('bakery-location'); return savedLoc ? JSON.parse(savedLoc) : { type: null, lat: null, lng: null, address: null, pincode: null }; } catch (e) { return { type: null, lat: null, lng: null, address: null, pincode: null }; } });
   const [checkoutTotals, setCheckoutTotals] = useState({ subtotal: 0, deliveryFee: 0, total: 0 });
+  
+  // --- AUTH STATE ---
+  const [user, setUser] = useState(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => { sessionStorage.setItem('bakery-cart', JSON.stringify(cart)); }, [cart]);
   useEffect(() => { sessionStorage.setItem('bakery-location', JSON.stringify(locationData)); }, [locationData]);
+
+  // Auth Listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // Fetch custom claims to check for roles (e.g., admin)
+        const idTokenResult = await getIdTokenResult(currentUser);
+        currentUser.role = idTokenResult.claims.admin ? 'admin' : 'user';
+        console.log("User role:", currentUser.role);
+        console.log("idTokenResult:", idTokenResult);
+        // if(currentUser.role === 'admin') {
+        //   currentUser.role = 'admin'; 
+        // }
+        // Simulating admin role for demo purposes if email contains 'admin'
+        // if (currentUser.email && currentUser.email.includes('ashish')) {
+        //   currentUser.role = 'admin'; 
+        // }
+        setUser(currentUser);
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const clearCart = () => setCart([]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      clearCart(); // Clear cart on logout
+      // Redirect to home if on a protected route
+      if (currentView === 'admin' || currentView === 'checkout') {
+        setCurrentView('home');
+      }
+    } catch (error) {
+      console.error("Error signing out", error);
+    }
+  };
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
@@ -904,6 +1154,9 @@ const App = () => {
         setIsLocationModalOpen={setIsLocationModalOpen}
         isDarkMode={isDarkMode}
         toggleTheme={toggleTheme}
+        user={user}
+        onLoginClick={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
       />
       
       <main>
@@ -933,9 +1186,20 @@ const App = () => {
         )}
         {currentView === 'portfolio' && <div className="animate-in fade-in duration-500 pt-20"><Portfolio isDarkMode={isDarkMode} /></div>}
         {currentView === 'about' && <div className="animate-in fade-in duration-500 pt-20"><AboutUs isDarkMode={isDarkMode} /></div>}
-        {currentView === 'admin' && <div className="animate-in fade-in duration-500 pt-20"><AdminDashboard isDarkMode={isDarkMode} /></div>}
+        {currentView === 'admin' && (
+          <div className="animate-in fade-in duration-500 pt-20">
+            {user && user.role === 'admin' ? (
+              <AdminDashboard isDarkMode={isDarkMode} user={user} />
+            ) : (
+              <div className="text-center py-20">
+                <h2 className="text-2xl font-bold text-red-500">Access Denied</h2>
+                <p>You do not have permission to view this page.</p>
+              </div>
+            )}
+          </div>
+        )}
         {currentView === 'cart' && <div className="animate-in slide-in-from-right-8 duration-500 pt-20"><Cart cart={cart} updateQuantity={updateQuantity} removeFromCart={removeFromCart} locationData={locationData} onCheckout={handleProceedToCheckout} isDarkMode={isDarkMode} /></div>}
-        {currentView === 'checkout' && <div className="animate-in zoom-in-95 duration-300 pt-20"><Checkout cart={cart} total={checkoutTotals.total} subtotal={checkoutTotals.subtotal} deliveryFee={checkoutTotals.deliveryFee} locationData={locationData} onBack={() => setCurrentView('cart')} isDarkMode={isDarkMode} /></div>}
+        {currentView === 'checkout' && <div className="animate-in zoom-in-95 duration-300 pt-20"><Checkout cart={cart} total={checkoutTotals.total} subtotal={checkoutTotals.subtotal} deliveryFee={checkoutTotals.deliveryFee} locationData={locationData} onBack={() => setCurrentView('cart')} isDarkMode={isDarkMode} user={user} onLoginClick={() => setIsLoginModalOpen(true)} onCheckoutSuccess={clearCart} /></div>}
       </main>
       <footer className={`py-16 text-center border-t ${isDarkMode ? 'bg-stone-950 text-stone-400 border-stone-900' : 'bg-stone-900 text-stone-400 border-stone-800'}`}>
         <div className="mb-8">
@@ -944,6 +1208,7 @@ const App = () => {
         <p className="font-medium">© 2024 Crumbs A Microbakery (560067). All rights reserved.</p>
       </footer>
       <LocationModal isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onSetLocation={setLocationData} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} isDarkMode={isDarkMode} />
     </div>
   );
 };

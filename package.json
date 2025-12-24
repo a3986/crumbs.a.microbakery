@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "http://a3986.github.io/crumbs.a.microbakery",
   "dependencies": {
+    "firebase": "^12.7.0",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
